@@ -213,4 +213,31 @@ drwxr-xr-x.  4 root root      34 фев 27 09:25 rpmbuild
 Выполнено!
 ```
 9. В зависимостях есть openssl `openssl-devel.x86_64 1:1.0.2k-24.el7_9 `, но версия постарее.
-10. 
+10. Редактирую nginx.spec `[root@homework06 ~]# vi rpmbuild/SPECS/nginx.spec`
+```
+%build
+./configure %{BASE_CONFIGURE_ARGS} \
+    --with-cc-opt="%{WITH_CC_OPT}" \
+    --with-ld-opt="%{WITH_LD_OPT}" \
+    --with-openssl=/root/openssl-1.1.1m\
+    --with-debug
+```
+11. Собираю пакет
+```
+[root@homework06 ~]# rpmbuild -bb rpmbuild/SPECS/nginx.spec
+```
+12. Получил ошибку
+```
+checking for OS
+ + Linux 3.10.0-1160.59.1.el7.x86_64 x86_64
+checking for C compiler ... not found
+
+./configure: error: C compiler cc is not found
+
+ошибка: Неверный код возврата из /var/tmp/rpm-tmp.vl8cYD (%build)
+
+
+Ошибки сборки пакетов:
+    Неверный код возврата из /var/tmp/rpm-tmp.vl8cYD (%build)
+```
+13. 
