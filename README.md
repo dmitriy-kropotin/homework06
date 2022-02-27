@@ -462,6 +462,7 @@ updates/7/x86_64                                          CentOS-7 - Updates    
 repolist: 14 143
 ```
 Репозиторий назван `localhost_repo_`
+
 24. Далее я отключаю все репозитории, и включаю только свой, локальный
 ```
 [root@homework06 ~]# yum-config-manager --disable "*"
@@ -575,5 +576,66 @@ localhost_repo_                                                                 
 ```
 Успех!
 
+28. Далее получаю через личный кабинет zerossl сертификат. Копирую его через scp на виртуальную машину. Конфигурирую nginx соответствующим образом
+```
+[vagrant@homework06 ~]$ scp tesla@10.0.2.2:~/homework06/certificate01.crt ./
+The authenticity of host '10.0.2.2 (10.0.2.2)' can't be established.
+ECDSA key fingerprint is SHA256:etBgzo6fwPO4pFwhgCWfS9reMJ+R3l4ioSSRK/VOXGk.
+ECDSA key fingerprint is MD5:d6:03:06:98:fa:68:c6:1e:23:6f:15:c8:dc:19:75:61.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '10.0.2.2' (ECDSA) to the list of known hosts.
+tesla@10.0.2.2's password:
+certificate01.crt                                                                                                      100% 4765     3.4MB/s   00:00
+[vagrant@homework06 ~]$ ls -la
+итого 24
+drwx------. 3 vagrant vagrant  120 фев 27 18:12 .
+drwxr-xr-x. 3 root    root      21 апр 30  2020 ..
+-rw-------. 1 vagrant vagrant   15 фев 27 18:08 .bash_history
+-rw-r--r--. 1 vagrant vagrant   18 апр  1  2020 .bash_logout
+-rw-r--r--. 1 vagrant vagrant  193 апр  1  2020 .bash_profile
+-rw-r--r--. 1 vagrant vagrant  231 апр  1  2020 .bashrc
+-rw-rw-r--. 1 vagrant vagrant 4765 фев 27 18:12 certificate01.crt
+drwx------. 2 vagrant vagrant   48 фев 27 18:12 .ssh
+[vagrant@homework06 ~]$ scp tesla@10.0.2.2:~/homework06/private.key ./
+tesla@10.0.2.2's password:
+private.key                                                                                                            100% 1702     1.3MB/s   00:00
+[vagrant@homework06 ~]$ pwd
+/home/vagrant
+[vagrant@homework06 ~]$ sudo cp /home/vagrant/private.key /etc/ssl/
+[vagrant@homework06 ~]$ sudo cp /home/vagrant/certificate01.crt /etc/ssl/
+[vagrant@homework06 ~]$ ls -la /etc/ssl
+итого 24
+drwxr-xr-x.  2 root root   63 фев 27 18:14 .
+drwxr-xr-x. 84 root root 8192 фев 27 17:58 ..
+-rw-r--r--.  1 root root 4765 фев 27 18:14 certificate01.crt
+lrwxrwxrwx.  1 root root   16 фев 27 09:11 certs -> ../pki/tls/certs
+-rw-r--r--.  1 root root 1702 фев 27 18:14 private.key
+```
+Конфиг nginx
+```
+server {
+    listen 80;
+
+    server_name _;
+
+    return 301 https://$host$request_uri;
+}
+
+
+server {
+    listen       443 ssl;
+    server_name  localhost;
+
+    #access_log  /var/log/nginx/host.access.log  main;
+    ssl_certificate      /etc/ssl/certificate01.crt;
+    ssl_certificate_key  /etc/ssl/private.key;
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+        autoindex on;
+    }
+...
+```
 
     
