@@ -226,7 +226,7 @@ drwxr-xr-x.  4 root root      34 фев 27 09:25 rpmbuild
 ```
 [root@homework06 ~]# rpmbuild -bb rpmbuild/SPECS/nginx.spec
 ```
-12. Получил ошибку
+Получил ошибку
 ```
 checking for OS
  + Linux 3.10.0-1160.59.1.el7.x86_64 x86_64
@@ -240,4 +240,202 @@ checking for C compiler ... not found
 Ошибки сборки пакетов:
     Неверный код возврата из /var/tmp/rpm-tmp.vl8cYD (%build)
 ```
-13. 
+12. Доставляю gcc
+```
+[root@homework06 ~]# yum install gcc
+...
+Установлено:
+  gcc.x86_64 0:4.8.5-44.el7
+
+Установлены зависимости:
+  cpp.x86_64 0:4.8.5-44.el7                        glibc-devel.x86_64 0:2.17-325.el7_9     glibc-headers.x86_64 0:2.17-325.el7_9
+  kernel-headers.x86_64 0:3.10.0-1160.59.1.el7     libmpc.x86_64 0:1.0.1-3.el7             mpfr.x86_64 0:3.1.1-4.el7
+
+Выполнено!
+```
+13. Запускаю еще раз сборку пакета
+```
+[root@homework06 ~]# rpmbuild -bb rpmbuild/SPECS/nginx.spec
+...
++ umask 022
++ cd /root/rpmbuild/BUILD
++ cd nginx-1.20.2
++ /usr/bin/rm -rf /root/rpmbuild/BUILDROOT/nginx-1.20.2-1.el7.ngx.x86_64
++ exit 0
+```
+На этот раз успешно!
+14. Проверяю, что собранные пакеты на месте
+```
+[root@homework06 ~]# ls -la rpmbuild/RPMS/x86_64/
+итого 4104
+drwxr-xr-x. 2 root root      98 фев 27 17:17 .
+drwxr-xr-x. 3 root root      20 фев 27 17:17 ..
+-rw-r--r--. 1 root root 2199212 фев 27 17:17 nginx-1.20.2-1.el7.ngx.x86_64.rpm
+-rw-r--r--. 1 root root 2000284 фев 27 17:17 nginx-debuginfo-1.20.2-1.el7.ngx.x86_64.rpm
+[root@homework06 ~]#
+```
+15. Устанавливаю nginx из собранного пакета
+```
+[root@homework06 ~]# yum localinstall -y rpmbuild/RPMS/x86_64/nginx-1.20.2-1.el7.ngx.x86_64.rpm
+Загружены модули: fastestmirror
+Проверка rpmbuild/RPMS/x86_64/nginx-1.20.2-1.el7.ngx.x86_64.rpm: 1:nginx-1.20.2-1.el7.ngx.x86_64
+rpmbuild/RPMS/x86_64/nginx-1.20.2-1.el7.ngx.x86_64.rpm отмечен для установки
+Разрешение зависимостей
+--> Проверка сценария
+---> Пакет nginx.x86_64 1:1.20.2-1.el7.ngx помечен для установки
+--> Проверка зависимостей окончена
+
+Зависимости определены
+....
+Commercial subscriptions for nginx are available on:
+* https://nginx.com/products/
+
+----------------------------------------------------------------------
+  Проверка    : 1:nginx-1.20.2-1.el7.ngx.x86_64                                                                                   1/1
+
+Установлено:
+  nginx.x86_64 1:1.20.2-1.el7.ngx
+
+Выполнено!
+```
+16. Запускаю nginx и проверяю его статус
+```
+[root@homework06 ~]# systemctl start nginx
+[root@homework06 ~]# systemctl enable nginx
+Created symlink from /etc/systemd/system/multi-user.target.wants/nginx.service to /usr/lib/systemd/system/nginx.service.
+[root@homework06 ~]# systemctl status nginx
+● nginx.service - nginx - high performance web server
+   Loaded: loaded (/usr/lib/systemd/system/nginx.service; enabled; vendor preset: disabled)
+   Active: active (running) since Вс 2022-02-27 17:22:04 UTC; 23s ago
+     Docs: http://nginx.org/en/docs/
+ Main PID: 8274 (nginx)
+   CGroup: /system.slice/nginx.service
+           ├─8274 nginx: master process /usr/sbin/nginx -c /etc/nginx/nginx.conf
+           └─8275 nginx: worker process
+
+фев 27 17:22:04 homework06 systemd[1]: Starting nginx - high performance web server...
+фев 27 17:22:04 homework06 systemd[1]: Can't open PID file /var/run/nginx.pid (yet?) after start: No such file or directory
+фев 27 17:22:04 homework06 systemd[1]: Started nginx - high performance web server.
+```
+17. Проверяю при помощи curl работу nginx
+```
+[root@homework06 ~]# curl http://localhost
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+```
+18. Создаю директорию под репозиторий и копирую в нее свой собранный nginx
+```
+[root@homework06 ~]# mkdir /usr/share/nginx/html/repo
+[root@homework06 ~]# cp rpmbuild/RPMS/x86_64/nginx-1.20.2-1.el7.ngx.x86_64.rpm /usr/share/nginx/html/repo
+[root@homework06 ~]# ls -la /usr/share/nginx/html/repo
+итого 2148
+drwxr-xr-x. 2 root root      47 фев 27 17:26 .
+drwxr-xr-x. 3 root root      52 фев 27 17:26 ..
+-rw-r--r--. 1 root root 2199212 фев 27 17:26 nginx-1.20.2-1.el7.ngx.x86_64.rpm
+[root@homework06 ~]#
+```
+19. Скачаю в свой репозиторий mc с зависимостями и percona-release
+```
+[root@homework06 ~]# yum install --downloadonly --downloaddir=/usr/share/nginx/html/repo/ mc
+...
+Итого за операцию
+======================================================================================================================================
+Установить  1 пакет (+1 зависимый)
+
+Объем загрузки: 1.8 M
+Объем изменений: 5.7 M
+Background downloading packages, then exiting:
+(1/2): gpm-libs-1.20.7-6.el7.x86_64.rpm                                                                        |  32 kB  00:00:00
+(2/2): mc-4.8.7-11.el7.x86_64.rpm                                                                              | 1.7 MB  00:00:00
+--------------------------------------------------------------------------------------------------------------------------------------
+Общий размер                                                                                          2.7 MB/s | 1.8 MB  00:00:00
+exiting because "Download Only" specified
+[root@homework06 ~]# wget https://downloads.percona.com/downloads/percona-release/percona-release-1.0-9/redhat/percona-release-1.0-9.noarch.rpm
+--2022-02-27 17:30:57--  https://downloads.percona.com/downloads/percona-release/percona-release-1.0-9/redhat/percona-release-1.0-9.noarch.rpm
+Распознаётся downloads.percona.com (downloads.percona.com)... 162.220.4.222, 162.220.4.221, 74.121.199.231
+Подключение к downloads.percona.com (downloads.percona.com)|162.220.4.222|:443... соединение установлено.
+HTTP-запрос отправлен. Ожидание ответа... 200 OK
+Длина: 16664 (16K) [application/octet-stream]
+Сохранение в: «percona-release-1.0-9.noarch.rpm»
+
+100%[============================================================================================>] 16 664      --.-K/s   за 0,1s
+
+2022-02-27 17:30:58 (125 KB/s) - «percona-release-1.0-9.noarch.rpm» сохранён [16664/16664]
+[root@homework06 ~]# cp percona-release-1.0-9.noarch.rpm /usr/share/nginx/html/repo/
+[root@homework06 ~]# ls -la /usr/share/nginx/html/repo/
+итого 3980
+drwxr-xr-x. 2 root root     161 фев 27 17:31 .
+drwxr-xr-x. 3 root root      52 фев 27 17:26 ..
+-rw-r--r--. 1 root root   33120 авг 22  2019 gpm-libs-1.20.7-6.el7.x86_64.rpm
+-rw-r--r--. 1 root root 1815580 ноя 20  2016 mc-4.8.7-11.el7.x86_64.rpm
+-rw-r--r--. 1 root root 2199212 фев 27 17:26 nginx-1.20.2-1.el7.ngx.x86_64.rpm
+-rw-r--r--. 1 root root   16664 фев 27 17:31 percona-release-1.0-9.noarch.rpm
+```
+Для меня инетересно то, что yum скачал mc вместе с зависимостями.
+20. Создаю репозиторий
+```
+[root@homework06 ~]# createrepo /usr/share/nginx/html/repo
+Spawning worker 0 with 4 pkgs
+Workers Finished
+Saving Primary metadata
+Saving file lists metadata
+Saving other metadata
+Generating sqlite DBs
+Sqlite DBs complete
+```
+21. Включаю autoindex в настройках nginx, проверяю конфигурацию nginx и перезагружаю ее
+```
+[root@homework06 ~]# vi /etc/nginx/conf.d/default.conf
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+        autoindex on;
+    }
+
+[root@homework06 ~]# nginx -t
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+[root@homework06 ~]# nginx -s reload
+```
+22. Проверяю
+```
+[root@homework06 ~]# curl -a http://localhost/repo/
+<html>
+<head><title>Index of /repo/</title></head>
+<body>
+<h1>Index of /repo/</h1><hr><pre><a href="../">../</a>
+<a href="repodata/">repodata/</a>                                          27-Feb-2022 17:33                   -
+<a href="gpm-libs-1.20.7-6.el7.x86_64.rpm">gpm-libs-1.20.7-6.el7.x86_64.rpm</a>                   22-Aug-2019 21:25               33120
+<a href="mc-4.8.7-11.el7.x86_64.rpm">mc-4.8.7-11.el7.x86_64.rpm</a>                         20-Nov-2016 19:25             1815580
+<a href="nginx-1.20.2-1.el7.ngx.x86_64.rpm">nginx-1.20.2-1.el7.ngx.x86_64.rpm</a>                  27-Feb-2022 17:26             2199212
+<a href="percona-release-1.0-9.noarch.rpm">percona-release-1.0-9.noarch.rpm</a>                   27-Feb-2022 17:31               16664
+</pre><hr></body>
+</html>
+```
+23. 
+    
+    
