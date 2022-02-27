@@ -436,6 +436,144 @@ nginx: configuration file /etc/nginx/nginx.conf test is successful
 </pre><hr></body>
 </html>
 ```
-23. 
-    
+23. Добавляю свой репозиторий
+```
+[root@homework06 ~]# yum-config-manager --add-repo http://localhost/repo/
+Загружены модули: fastestmirror
+adding repo from: http://localhost/repo/
+
+[localhost_repo_]
+name=added from: http://localhost/repo/
+baseurl=http://localhost/repo/
+enabled=1
+[root@homework06 ~]# yum repolist enabled
+Загружены модули: fastestmirror
+Loading mirror speeds from cached hostfile
+ * base: mirror.truenetwork.ru
+ * extras: mirror.truenetwork.ru
+ * updates: mirror.yandex.ru
+localhost_repo_                                                                                                | 2.9 kB  00:00:00
+localhost_repo_/primary_db                                                                                     | 5.1 kB  00:00:00
+Идентификатор репозитория                                 репозиторий                                                        состояние
+base/7/x86_64                                             CentOS-7 - Base                                                    10 072
+extras/7/x86_64                                           CentOS-7 - Extras                                                     500
+localhost_repo_                                           added from: http://localhost/repo/                                      4
+updates/7/x86_64                                          CentOS-7 - Updates                                                  3 567
+repolist: 14 143
+```
+Репозиторий назван `localhost_repo_`
+24. Далее я отключаю все репозитории, и включаю только свой, локальный
+```
+[root@homework06 ~]# yum-config-manager --disable "*"
+.....
+[root@homework06 ~]# yum-config-manager --enable "localhost_repo_"
+Загружены модули: fastestmirror
+======================================================= repo: localhost_repo_ ========================================================
+[localhost_repo_]
+....
+```
+25. Доступные пакеты
+```
+[root@homework06 ~]# yum list | grep localhost
+gpm-libs.x86_64                    1.20.7-6.el7                 localhost_repo_
+mc.x86_64                          1:4.8.7-11.el7               localhost_repo_
+percona-release.noarch             1.0-9                        localhost_repo_
+```
+26. Устанавливаю mc и percona-release
+```
+[root@homework06 ~]# yum install mc
+Загружены модули: fastestmirror
+Loading mirror speeds from cached hostfile
+localhost_repo_
+...
+ависимости определены
+
+======================================================================================================================================
+ Package                      Архитектура                Версия                             Репозиторий                         Размер
+======================================================================================================================================
+Установка:
+ mc                           x86_64                     1:4.8.7-11.el7                     localhost_repo_                     1.7 M
+Установка зависимостей:
+ gpm-libs                     x86_64                     1.20.7-6.el7                       localhost_repo_                      32 k
+
+Итого за операцию
+======================================================================================================================================
+Установить  1 пакет (+1 зависимый)
+...
+Установлено:
+  mc.x86_64 1:4.8.7-11.el7
+
+Установлены зависимости:
+  gpm-libs.x86_64 0:1.20.7-6.el7
+
+Выполнено!
+
+[root@homework06 ~]# yum install percona-release
+Загружены модули: fastestmirror
+Loading mirror speeds from cached hostfile
+Разрешение зависимостей
+--> Проверка сценария
+---> Пакет percona-release.noarch 0:1.0-9 помечен для установки
+--> Проверка зависимостей окончена
+
+Зависимости определены
+
+======================================================================================================================================
+ Package                             Архитектура                Версия                      Репозиторий                         Размер
+======================================================================================================================================
+Установка:
+ percona-release                     noarch                     1.0-9                       localhost_repo_                      16 k
+
+Итого за операцию
+======================================================================================================================================
+Установить  1 пакет
+...
+Объем изменений: 18 k
+Is this ok [y/d/N]: y
+Downloading packages:
+предупреждение: /var/cache/yum/x86_64/7/localhost_repo_/packages/percona-release-1.0-9.noarch.rpm: Заголовок V4 DSA/SHA1 Signature, key ID cd2efd2a: NOKEY
+Публичный ключ для percona-release-1.0-9.noarch.rpm не установлен
+percona-release-1.0-9.noarch.rpm                                                                               |  16 kB  00:00:00
+
+
+Публичный ключ для percona-release-1.0-9.noarch.rpm не установлен
+```
+mc установился вместе с зависимостями, а percona-release нет. Необходимо добавить настройку gpgcheck=0 в параметрах репозитория
+```
+[localhost_repo_]
+name=added from: http://localhost/repo/
+baseurl=http://localhost/repo/
+enabled=1
+gpgcheck=0
+```
+27. Пробую еще раз уставноить percona-release
+```
+[root@homework06 ~]# yum install percona-release
+Загружены модули: fastestmirror
+Loading mirror speeds from cached hostfile
+localhost_repo_                                                                                                | 2.9 kB  00:00:00
+Разрешение зависимостей
+--> Проверка сценария
+---> Пакет percona-release.noarch 0:1.0-9 помечен для установки
+--> Проверка зависимостей окончена
+
+Зависимости определены
+
+======================================================================================================================================
+ Package                             Архитектура                Версия                      Репозиторий                         Размер
+======================================================================================================================================
+Установка:
+ percona-release                     noarch                     1.0-9                       localhost_repo_                      16 k
+...
+
+  Проверка    : percona-release-1.0-9.noarch                                                                                      1/1
+
+Установлено:
+  percona-release.noarch 0:1.0-9
+
+Выполнено!
+```
+Успех!
+
+
     
