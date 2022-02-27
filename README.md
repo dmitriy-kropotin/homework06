@@ -135,4 +135,82 @@ dr-xr-xr-x. 17 root root     240 апр 30  2020 ..
 drwxr-xr-x.  4 root root      34 фев 27 09:25 rpmbuild
 -rw-r--r--.  1 root root     129 дек 29  2013 .tcshrc
 ```
-7. Скачиваю и 
+7. Скачиваю и распаковываю openssl 1.1.1m
+```
+[root@homework06 ~]# wget https://www.openssl.org/source/openssl-1.1.1m.tar.gz
+--2022-02-27 09:50:52--  https://www.openssl.org/source/openssl-1.1.1m.tar.gz
+Распознаётся www.openssl.org (www.openssl.org)... 184.51.226.32, 2001:2030:21:1a3::c1e, 2001:2030:21:193::c1e
+Подключение к www.openssl.org (www.openssl.org)|184.51.226.32|:443... соединение установлено.
+HTTP-запрос отправлен. Ожидание ответа... 200 OK
+Длина: 9847315 (9,4M) [application/x-gzip]
+Сохранение в: «openssl-1.1.1m.tar.gz»
+
+100%[============================================================================================>] 9 847 315   8,52MB/s   за 1,1s
+
+2022-02-27 09:50:54 (8,52 MB/s) - «openssl-1.1.1m.tar.gz» сохранён [9847315/9847315]
+
+[root@homework06 ~]# tar -xvf openssl-1.1.1m.tar.gz
+....
+openssl-1.1.1m/util/private.num
+openssl-1.1.1m/util/process_docs.pl
+openssl-1.1.1m/util/shlib_wrap.sh.in
+openssl-1.1.1m/util/su-filter.pl
+openssl-1.1.1m/util/unlocal_shlib.com.in
+[root@homework06 ~]# ls -la
+итого 10724
+dr-xr-x---.  4 root root     263 фев 27 09:49 .
+dr-xr-xr-x. 17 root root     240 апр 30  2020 ..
+-rw-------.  1 root root    5570 апр 30  2020 anaconda-ks.cfg
+-rw-------.  1 root root      18 фев 27 09:15 .bash_history
+-rw-r--r--.  1 root root      18 дек 29  2013 .bash_logout
+-rw-r--r--.  1 root root     176 дек 29  2013 .bash_profile
+-rw-r--r--.  1 root root     176 дек 29  2013 .bashrc
+-rw-r--r--.  1 root root     100 дек 29  2013 .cshrc
+-rw-r--r--.  1 root root 1082461 ноя 16 15:20 nginx-1.20.2-1.el7.ngx.src.rpm
+drwxrwxr-x. 18 root root    4096 дек 14 15:45 openssl-1.1.1m
+-rw-r--r--.  1 root root 9847315 дек 14 16:28 openssl-1.1.1m.tar.gz
+-rw-------.  1 root root    5300 апр 30  2020 original-ks.cfg
+drwxr-xr-x.  4 root root      34 фев 27 09:25 rpmbuild
+-rw-r--r--.  1 root root     129 дек 29  2013 .tcshrc
+```
+8. Проверяю зависимости для сборки
+```
+[root@homework06 ~]# yum-builddep rpmbuild/SPECS/nginx.spec
+....
+
+Зависимости определены
+
+======================================================================================================================================
+ Package                               Архитектура              Версия                                Репозиторий               Размер
+======================================================================================================================================
+Установка:
+ openssl-devel                         x86_64                   1:1.0.2k-24.el7_9                     updates                   1.5 M
+ pcre-devel                            x86_64                   8.32-17.el7                           base                      480 k
+ zlib-devel                            x86_64                   1.2.7-19.el7_9                        updates                    50 k
+Установка зависимостей:
+ keyutils-libs-devel                   x86_64                   1.5.8-3.el7                           base                       37 k
+ krb5-devel                            x86_64                   1.15.1-51.el7_9                       updates                   273 k
+ libcom_err-devel                      x86_64                   1.42.9-19.el7                         base                       32 k
+ libkadm5                              x86_64                   1.15.1-51.el7_9                       updates                   179 k
+ libselinux-devel                      x86_64                   2.5-15.el7                            base                      187 k
+ libsepol-devel                        x86_64                   2.5-10.el7                            base                       77 k
+ libverto-devel                        x86_64                   0.2.5-4.el7                           base                       12 k
+
+Итого за операцию
+======================================================================================================================================
+Установить  3 пакета (+7 зависимых)
+....
+
+
+Установлено:
+  openssl-devel.x86_64 1:1.0.2k-24.el7_9          pcre-devel.x86_64 0:8.32-17.el7          zlib-devel.x86_64 0:1.2.7-19.el7_9
+
+Установлены зависимости:
+  keyutils-libs-devel.x86_64 0:1.5.8-3.el7      krb5-devel.x86_64 0:1.15.1-51.el7_9       libcom_err-devel.x86_64 0:1.42.9-19.el7
+  libkadm5.x86_64 0:1.15.1-51.el7_9             libselinux-devel.x86_64 0:2.5-15.el7      libsepol-devel.x86_64 0:2.5-10.el7
+  libverto-devel.x86_64 0:0.2.5-4.el7
+
+Выполнено!
+```
+9. В зависимостях есть openssl `openssl-devel.x86_64 1:1.0.2k-24.el7_9 `, но версия постарее.
+10. 
